@@ -265,6 +265,29 @@ List_Rec :: struct {
     head, tail: List_Node,
 }
 
+Load_Flags :: enum i32 {
+    Default                     = 0,
+    No_Scale                    = 1 << 0,
+    No_Hinting                  = 1 << 2,
+    Render                      = 1 << 3,
+    No_Bitmap                   = 1 << 4,
+    Vertical_Layout             = 1 << 5,
+    Force_Autohint              = 1 << 6,
+    Crop_Bitmap                 = 1 << 7,
+    Pedantic                    = 1 << 8,
+    Ignore_Global_Advance_Width = 1 << 9,
+    No_Recurse                  = 1 << 10,
+    Ignore_Transform            = 1 << 11,
+    Monochrome                  = 1 << 12,
+    Linear_Design               = 1 << 13,
+    No_Autohint                 = 1 << 15,
+    Color                       = 1 << 20,
+    Compute_Metrics             = 1 << 21,
+    Bitmap_Metrics_Only         = 1 << 22,
+    Advance_Only                = 1 << 8,
+    S_Bits_Only                 = 1 << 14,
+}
+
 Matrix :: struct {
     xx, xy, yx, yy : Fixed,
 }
@@ -389,4 +412,6 @@ foreign freetype {
 
     @(link_name="FT_New_Face")        new_face        :: proc(library: Library, file_path_name: cstring, face_index: c.long, face: ^Face) -> Error ---
     @(link_name="FT_New_Memory_Face") new_memory_face :: proc(library: Library, file_base: ^byte, file_size, face_index: c.long, face: ^Face) -> Error ---
+
+    @(link_name="FT_Load_Char") load_char :: proc(face: Face, char_code: c.ulong, load_flags: Load_Flags) -> Error ---
 }
