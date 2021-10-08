@@ -9,7 +9,8 @@ when ODIN_OS == "windows" {
 Library       :: distinct rawptr
 
 Bool          :: distinct c.uchar
-Error         :: distinct c.int;
+Error         :: distinct c.int
+F26Dot6       :: distinct c.long
 Fixed         :: distinct c.long
 Pos           :: distinct c.long
 
@@ -413,5 +414,6 @@ foreign freetype {
     @(link_name="FT_New_Face")        new_face        :: proc(library: Library, file_path_name: cstring, face_index: c.long, face: ^Face) -> Error ---
     @(link_name="FT_New_Memory_Face") new_memory_face :: proc(library: Library, file_base: ^byte, file_size, face_index: c.long, face: ^Face) -> Error ---
 
-    @(link_name="FT_Load_Char") load_char :: proc(face: Face, char_code: c.ulong, load_flags: Load_Flags) -> Error ---
+    @(link_name="FT_Load_Char")     load_char     :: proc(face: Face, char_code: c.ulong, load_flags: Load_Flags) -> Error ---
+    @(link_name="FT_Set_Char_Size") set_char_size :: proc(face: Face, char_width, char_height: F26Dot6, horz_resolution, vert_resolution: c.uint) -> Error ---
 }
