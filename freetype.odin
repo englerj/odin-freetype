@@ -336,6 +336,16 @@ Parameter :: struct {
     data : rawptr,
 }
 
+Render_Mode :: enum {
+    Normal = 0,
+    Light  = 1,
+    Mono   = 2,
+    LCD    = 3,
+    LCD_V  = 4,
+
+    Max    = 5,
+}
+
 Size_Metrics :: struct {
     x_ppem      : c.ushort,
     y_ppem      : c.ushort,
@@ -416,4 +426,6 @@ foreign freetype {
 
     @(link_name="FT_Load_Char")     load_char     :: proc(face: Face, char_code: c.ulong, load_flags: Load_Flags) -> Error ---
     @(link_name="FT_Set_Char_Size") set_char_size :: proc(face: Face, char_width, char_height: F26Dot6, horz_resolution, vert_resolution: c.uint) -> Error ---
+
+    @(link_name="FT_Render_Glyph") render_glyph :: proc(slot: Glyph_Slot, render_mode: Render_Mode) -> Error ---
 }
