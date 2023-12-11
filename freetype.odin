@@ -249,7 +249,7 @@ Face_Rec :: struct {
     available_sizes     : [^]Bitmap_Size,
 
     num_charmaps        : c.int,
-    charmaps            : [^]^Char_Map_Rec,
+    charmaps            : [^]Char_Map,
 
     generic             : Generic,
 
