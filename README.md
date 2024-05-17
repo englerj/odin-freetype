@@ -18,3 +18,10 @@ Import the package.
 ```c
 import "shared:freetype"
 ```
+
+## Demo
+On Windows, you can run the demo under the `demo` folder. The demo renders a series of characters from a font and displays them in the window. You can adjust the size of the font using the arrow keys.
+```bash
+cd demo
+odin run .\
+```
