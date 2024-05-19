@@ -229,8 +229,26 @@ Driver_Rec :: struct {
     glyph_loader : Glyph_Loader,
 }
 
-Encoding :: enum {
-    // TODO
+Encoding :: enum c.int {
+    None            = 0,
+
+    MS_Symbol       = c.int('s')<<24 | c.int('y')<<16 | c.int('m')<<8 | c.int('b')<<0,
+    Unicode         = c.int('u')<<24 | c.int('n')<<16 | c.int('i')<<8 | c.int('c')<<0,
+
+    Sjis            = c.int('s')<<24 | c.int('j')<<16 | c.int('i')<<8 | c.int('s')<<0,
+    Prc             = c.int('g')<<24 | c.int('b')<<16 | c.int(' ')<<8 | c.int(' ')<<0,
+    Big5            = c.int('b')<<24 | c.int('i')<<16 | c.int('g')<<8 | c.int('5')<<0,
+    Wansung         = c.int('w')<<24 | c.int('a')<<16 | c.int('n')<<8 | c.int('s')<<0,
+    Johab           = c.int('j')<<24 | c.int('o')<<16 | c.int('h')<<8 | c.int('a')<<0,
+
+    Adobe_Standard  = c.int('A')<<24 | c.int('D')<<16 | c.int('O')<<8 | c.int('B')<<0,
+    Adobe_Expert    = c.int('A')<<24 | c.int('D')<<16 | c.int('B')<<8 | c.int('E')<<0,
+    Adobe_Custom    = c.int('A')<<24 | c.int('D')<<16 | c.int('B')<<8 | c.int('C')<<0,
+    Adobe_Latin_1   = c.int('l')<<24 | c.int('a')<<16 | c.int('t')<<8 | c.int('1')<<0,
+
+    Old_Latin_2     = c.int('l')<<24 | c.int('a')<<16 | c.int('t')<<8 | c.int('2')<<0,
+
+    Apple_Roman     = c.int('a')<<24 | c.int('r')<<16 | c.int('m')<<8 | c.int('n')<<0,
 }
 
 Face_Rec :: struct {
