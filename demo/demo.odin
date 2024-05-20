@@ -40,10 +40,12 @@ main :: proc() {
 	dpi := windows.GetDpiForWindow(window)
 
 	ft_library: freetype.Library
-	freetype.init_free_type(&ft_library)
+	ft_error := freetype.init_free_type(&ft_library)
+	assert(ft_error == .Ok)
 
 	ft_face: freetype.Face
-	freetype.new_face(ft_library, FONT_FILE_NAME, 0, &ft_face)
+	ft_error = freetype.new_face(ft_library, FONT_FILE_NAME, 0, &ft_face)
+	assert(ft_error == .Ok)
 
 	window_width: i32
 	window_height: i32
@@ -173,17 +175,20 @@ render_font :: proc(
 		bitmap_data[i].a = 255
 	}
 
-	freetype.set_char_size(
+	ft_error := freetype.set_char_size(
 		ft_face,
 		0,
 		cast(freetype.F26Dot6)font_height * 64,
 		dpi,
 		dpi,
 	)
+	assert(ft_error == .Ok)
 
 	line_height: i32
 	for c in 0 ..< 255 {
-		freetype.load_char(ft_face, cast(u32)c, .Bitmap_Metrics_Only)
+		ft_error = freetype.load_char(ft_face, cast(u32)c, .Bitmap_Metrics_Only)
+		assert(ft_error == .Ok)
+		
 		line_height = max(line_height, cast(i32)ft_face.glyph.bitmap.rows)
 	}
 
@@ -194,8 +199,11 @@ render_font :: proc(
 	bitmap_offset.y = bitmap_margin + line_height
 
 	for i in 0 ..< 255 {
-		freetype.load_char(ft_face, cast(u32)i, .Default)
-		freetype.render_glyph(ft_face.glyph, .Normal)
+		ft_error = freetype.load_char(ft_face, cast(u32)i, .Default)
+		assert(ft_error == .Ok)
+
+		ft_error = freetype.render_glyph(ft_face.glyph, .Normal)
+		assert(ft_error == .Ok)
 
 		if (bitmap_offset.x + cast(i32)ft_face.glyph.bitmap.width >
 			   window_width) {
