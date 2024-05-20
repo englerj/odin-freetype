@@ -1,7 +1,6 @@
 package demo
 
 import freetype "../"
-import "core:mem"
 import "core:sys/windows"
 
 FONT_FILE_NAME :: "LiberationMono.ttf"
@@ -40,10 +39,12 @@ main :: proc() {
 	dpi := windows.GetDpiForWindow(window)
 
 	ft_library: freetype.Library
-	freetype.init_free_type(&ft_library)
+	ft_error := freetype.init_free_type(&ft_library)
+	assert(ft_error == .Ok)
 
 	ft_face: freetype.Face
-	freetype.new_face(ft_library, FONT_FILE_NAME, 0, &ft_face)
+	ft_error = freetype.new_face(ft_library, FONT_FILE_NAME, 0, &ft_face)
+	assert(ft_error == .Ok)
 
 	window_width: i32
 	window_height: i32
@@ -60,17 +61,12 @@ main :: proc() {
 		new_window_width := rect.right - rect.left
 		new_window_height := rect.bottom - rect.top
 
-		if (window_width != new_window_width ||
-			   window_height != new_window_height) {
+		if (window_width != new_window_width || window_height != new_window_height) {
 			window_width = new_window_width
 			window_height = new_window_height
 
 			if (bitmap_data != nil) {
-				windows.VirtualFree(
-					raw_data(bitmap_data),
-					0,
-					windows.MEM_RELEASE,
-				)
+				delete(bitmap_data)
 			}
 
 			bitmap_info.bmiHeader.biSize = size_of(bitmap_info.bmiHeader)
@@ -80,18 +76,7 @@ main :: proc() {
 			bitmap_info.bmiHeader.biBitCount = 32
 			bitmap_info.bmiHeader.biCompression = windows.BI_RGB
 
-			bitmap_data_len := window_width * window_height
-			bitmap_data_ptr := windows.VirtualAlloc(
-				nil,
-				cast(uint)(bitmap_data_len * size_of(RGBA)),
-				windows.MEM_COMMIT,
-				windows.PAGE_READWRITE,
-			)
-
-			bitmap_data = mem.slice_ptr(
-				cast(^RGBA)bitmap_data_ptr,
-				cast(int)bitmap_data_len,
-			)
+			bitmap_data = make([]RGBA, window_width * window_height)
 
 			render_font(ft_face, dpi, window_width, window_height, bitmap_data)
 		}
@@ -143,10 +128,7 @@ wnd_proc :: proc "system" (
 	case windows.WM_KEYUP:
 		{
 			scan_code: u32 = cast(u32)(l_param & 0x00ff0000) >> 16
-			vk_code := windows.MapVirtualKeyW(
-				scan_code,
-				windows.MAPVK_VSC_TO_VK_EX,
-			)
+			vk_code := windows.MapVirtualKeyW(scan_code, windows.MAPVK_VSC_TO_VK_EX)
 			switch vk_code {
 			case windows.VK_UP:
 				font_height += 1
@@ -159,13 +141,7 @@ wnd_proc :: proc "system" (
 	return windows.DefWindowProcW(hwnd, msg, w_param, l_param)
 }
 
-render_font :: proc(
-	ft_face: freetype.Face,
-	dpi: u32,
-	window_width: i32,
-	window_height: i32,
-	bitmap_data: []RGBA,
-) {
+render_font :: proc(ft_face: freetype.Face, dpi: u32, window_width: i32, window_height: i32, bitmap_data: []RGBA) {
 	for i in 0 ..< len(bitmap_data) {
 		bitmap_data[i].r = 0
 		bitmap_data[i].g = 0
@@ -173,17 +149,14 @@ render_font :: proc(
 		bitmap_data[i].a = 255
 	}
 
-	freetype.set_char_size(
-		ft_face,
-		0,
-		cast(freetype.F26Dot6)font_height * 64,
-		dpi,
-		dpi,
-	)
+	ft_error := freetype.set_char_size(ft_face, 0, cast(freetype.F26Dot6)font_height * 64, dpi, dpi)
+	assert(ft_error == .Ok)
 
 	line_height: i32
 	for c in 0 ..< 255 {
-		freetype.load_char(ft_face, cast(u32)c, .Bitmap_Metrics_Only)
+		ft_error = freetype.load_char(ft_face, cast(u32)c, .Bitmap_Metrics_Only)
+		assert(ft_error == .Ok)
+
 		line_height = max(line_height, cast(i32)ft_face.glyph.bitmap.rows)
 	}
 
@@ -194,11 +167,13 @@ render_font :: proc(
 	bitmap_offset.y = bitmap_margin + line_height
 
 	for i in 0 ..< 255 {
-		freetype.load_char(ft_face, cast(u32)i, .Default)
-		freetype.render_glyph(ft_face.glyph, .Normal)
+		ft_error = freetype.load_char(ft_face, cast(u32)i, .Default)
+		assert(ft_error == .Ok)
 
-		if (bitmap_offset.x + cast(i32)ft_face.glyph.bitmap.width >
-			   window_width) {
+		ft_error = freetype.render_glyph(ft_face.glyph, .Normal)
+		assert(ft_error == .Ok)
+
+		if (bitmap_offset.x + cast(i32)ft_face.glyph.bitmap.width > window_width) {
 			bitmap_offset.x = bitmap_margin
 			bitmap_offset.y += bitmap_margin
 			bitmap_offset.y += line_height
@@ -207,12 +182,8 @@ render_font :: proc(
 		if (ft_face.glyph.bitmap.buffer != nil) {
 			for y in 0 ..< ft_face.glyph.bitmap.rows {
 				for x in 0 ..< ft_face.glyph.bitmap.width {
-					bx :=
-						bitmap_offset.x +
-						ft_face.glyph.bitmap_left +
-						cast(i32)x
-					by :=
-						bitmap_offset.y - ft_face.glyph.bitmap_top + cast(i32)y
+					bx := bitmap_offset.x + ft_face.glyph.bitmap_left + cast(i32)x
+					by := bitmap_offset.y - ft_face.glyph.bitmap_top + cast(i32)y
 					if (bx >= window_width || by >= window_height) {
 						continue
 					}
