@@ -1,7 +1,6 @@
 package demo
 
 import freetype "../"
-import "core:mem"
 import "core:sys/windows"
 
 FONT_FILE_NAME :: "LiberationMono.ttf"
@@ -67,7 +66,7 @@ main :: proc() {
 			window_height = new_window_height
 
 			if (bitmap_data != nil) {
-				windows.VirtualFree(raw_data(bitmap_data), 0, windows.MEM_RELEASE)
+				delete(bitmap_data)
 			}
 
 			bitmap_info.bmiHeader.biSize = size_of(bitmap_info.bmiHeader)
@@ -77,15 +76,7 @@ main :: proc() {
 			bitmap_info.bmiHeader.biBitCount = 32
 			bitmap_info.bmiHeader.biCompression = windows.BI_RGB
 
-			bitmap_data_len := window_width * window_height
-			bitmap_data_ptr := windows.VirtualAlloc(
-				nil,
-				cast(uint)(bitmap_data_len * size_of(RGBA)),
-				windows.MEM_COMMIT,
-				windows.PAGE_READWRITE,
-			)
-
-			bitmap_data = mem.slice_ptr(cast(^RGBA)bitmap_data_ptr, cast(int)bitmap_data_len)
+			bitmap_data = make([]RGBA, window_width * window_height)
 
 			render_font(ft_face, dpi, window_width, window_height, bitmap_data)
 		}
