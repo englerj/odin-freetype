@@ -391,28 +391,30 @@ List_Rec :: struct {
     head, tail: List_Node,
 }
 
-Load_Flags :: enum i32 {
-    Default                     = 0,
-    No_Scale                    = 1 << 0,
-    No_Hinting                  = 1 << 2,
-    Render                      = 1 << 3,
-    No_Bitmap                   = 1 << 4,
-    Vertical_Layout             = 1 << 5,
-    Force_Autohint              = 1 << 6,
-    Crop_Bitmap                 = 1 << 7,
-    Pedantic                    = 1 << 8,
-    Ignore_Global_Advance_Width = 1 << 9,
-    No_Recurse                  = 1 << 10,
-    Ignore_Transform            = 1 << 11,
-    Monochrome                  = 1 << 12,
-    Linear_Design               = 1 << 13,
-    No_Autohint                 = 1 << 15,
-    Color                       = 1 << 20,
-    Compute_Metrics             = 1 << 21,
-    Bitmap_Metrics_Only         = 1 << 22,
-    Advance_Only                = 1 << 8,
-    S_Bits_Only                 = 1 << 14,
+Load_Flag :: enum i32 {
+    No_Scale                    = 0,
+    No_Hinting                  = 1,
+    Render                      = 2,
+    No_Bitmap                   = 3,
+    Vertical_Layout             = 4,
+    Force_Autohint              = 5,
+    Crop_Bitmap                 = 6,
+    Pedantic                    = 7,
+    Ignore_Global_Advance_Width = 9,
+    No_Recurse                  = 10,
+    Ignore_Transform            = 11,
+    Monochrome                  = 12,
+    Linear_Design               = 13,
+    S_Bits_Only                 = 14,
+    No_Autohint                 = 15,
+    Color                       = 20,
+    Compute_Metrics             = 21,
+    Bitmap_Metrics_Only         = 22,
+    No_SVG                      = 24,
+
 }
+
+Load_Flags :: distinct bit_set[Load_Flag; i32]
 
 Matrix :: struct {
     xx, xy, yx, yy : Fixed,
@@ -550,10 +552,17 @@ foreign freetype {
     @(link_name="FT_New_Memory_Face") new_memory_face :: proc(library: Library, file_base: ^byte, file_size, face_index: c.long, face: ^Face) -> Error ---
     @(link_name="FT_Done_Face")       done_face       :: proc(face: Face) -> Error ---
 
-    @(link_name="FT_Load_Char")      load_char     :: proc(face: Face, char_code: c.ulong, load_flags: Load_Flags) -> Error ---
-    @(link_name="FT_Set_Char_Size")  set_char_size :: proc(face: Face, char_width, char_height: F26Dot6, horz_resolution, vert_resolution: c.uint) -> Error ---
+    @(link_name="FT_Load_Char")      load_char      :: proc(face: Face, char_code: c.ulong, load_flags: Load_Flags) -> Error ---
+    @(link_name="FT_Set_Char_Size")  set_char_size  :: proc(face: Face, char_width, char_height: F26Dot6, horz_resolution, vert_resolution: c.uint) -> Error ---
     @(link_name="FT_Get_Char_Index") get_char_index :: proc(face: Face, code: c.ulong) -> c.uint ---
     
-    @(link_name="FT_Load_Glyph")   load_glyph :: proc(face: Face, index: c.uint, flags: Load_Flags) -> Error ---
+    @(link_name="FT_Load_Glyph")   load_glyph   :: proc(face: Face, index: c.uint, flags: Load_Flags) -> Error ---
     @(link_name="FT_Render_Glyph") render_glyph :: proc(slot: Glyph_Slot, render_mode: Render_Mode) -> Error ---
+
+    @(link_name="FT_Set_Pixel_Sizes") set_pixel_sizes :: proc(face: Face, pixel_width, pixel_height: u32) -> Error ---
+    @(link_name="FT_Request_Size")    request_size    :: proc(face: Face, req: Size_Request) -> Error ---
+    @(link_name="FT_Select_Size")     select_size     :: proc(face: Face, strike_index: i32) -> Error ---
+
+    @(link_name="FT_Set_Transform") set_transform   :: proc(face: Face, _matrix: ^Matrix, delta: ^Vector) ---
+    @(link_name="FT_Get_Transform") get_transform   :: proc(face: Face, _matrix: ^Matrix, delta: ^Vector) ---
 }
