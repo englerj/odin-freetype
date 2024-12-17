@@ -154,7 +154,7 @@ render_font :: proc(ft_face: freetype.Face, dpi: u32, window_width: i32, window_
 
 	line_height: i32
 	for c in 0 ..< 255 {
-		ft_error = freetype.load_char(ft_face, cast(u32)c, .Bitmap_Metrics_Only)
+		ft_error = freetype.load_char(ft_face, cast(u32)c, {.Bitmap_Metrics_Only})
 		assert(ft_error == .Ok)
 
 		line_height = max(line_height, cast(i32)ft_face.glyph.bitmap.rows)
@@ -167,7 +167,7 @@ render_font :: proc(ft_face: freetype.Face, dpi: u32, window_width: i32, window_
 	bitmap_offset.y = bitmap_margin + line_height
 
 	for i in 0 ..< 255 {
-		ft_error = freetype.load_char(ft_face, cast(u32)i, .Default)
+		ft_error = freetype.load_char(ft_face, cast(u32)i, {})
 		assert(ft_error == .Ok)
 
 		ft_error = freetype.render_glyph(ft_face.glyph, .Normal)
